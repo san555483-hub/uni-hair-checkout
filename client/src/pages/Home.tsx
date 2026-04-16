@@ -1,9 +1,10 @@
 import ServiceCard from '@/components/ServiceCard';
 import CartPanel from '@/components/CartPanel';
 import { useCart } from '@/contexts/CartContext';
-import { SERVICES } from '@/lib/services';
-import { ShoppingCart, X } from 'lucide-react';
+import { useFields } from '@/contexts/FieldsContext';
+import { ShoppingCart, X, Settings } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useLocation } from 'wouter';
 
 /**
  * 美髮店簡易結帳系統首頁
@@ -16,6 +17,8 @@ import { useState, useEffect } from 'react';
  */
 export default function Home() {
   const { items } = useCart();
+  const { services } = useFields();
+  const [, navigate] = useLocation();
   const [showCart, setShowCart] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const cartCount = items.reduce((sum, item) => sum + item.quantity, 0);
@@ -35,13 +38,22 @@ export default function Home() {
             <h1 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Playfair Display, serif' }}>Salon Luna</h1>
             <p className="text-xs md:text-sm text-muted-foreground">美髮店簡易結帳系統</p>
           </div>
-          <button
-            onClick={() => setShowCart(!showCart)}
-            className="flex items-center gap-2 bg-accent text-accent-foreground px-3 md:px-4 py-2 rounded-lg font-semibold hover:shadow-lg transition-all"
-          >
-            <ShoppingCart size={20} />
-            <span className="text-sm md:text-base">{cartCount}</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate('/admin')}
+              className="flex items-center gap-2 bg-secondary text-foreground px-3 md:px-4 py-2 rounded-lg font-semibold hover:shadow-lg transition-all"
+              title="管理模式"
+            >
+              <Settings size={20} />
+            </button>
+            <button
+              onClick={() => setShowCart(!showCart)}
+              className="flex items-center gap-2 bg-accent text-accent-foreground px-3 md:px-4 py-2 rounded-lg font-semibold hover:shadow-lg transition-all"
+            >
+              <ShoppingCart size={20} />
+              <span className="text-sm md:text-base">{cartCount}</span>
+            </button>
+          </div>
         </div>
       </header>
 
@@ -54,27 +66,39 @@ export default function Home() {
         </div>
 
         {/* 服務項目網格 */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          {SERVICES.map(service => (
-            <ServiceCard
-              key={service.id}
-              id={service.id}
-              name={service.name}
-              description={service.description}
-              price={service.price}
-            />
-          ))}
-        </div>
+        {services.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            {services.map(service => (
+              service.available !== false && (
+                <ServiceCard
+                  key={service.id}
+                  id={service.id}
+                  name={service.name}
+                  description={service.description}
+                  price={service.price}
+                />
+              )
+            ))}
+          </div>
+        )}
 
         {/* 下部提示 */}
-        <div className="mt-12 md:mt-16 p-6 md:p-8 bg-secondary rounded-lg text-center">
-          <p className="text-muted-foreground text-sm md:text-base">
-            {items.length > 0 
-              ? `已選擇 ${items.reduce((sum, item) => sum + item.quantity, 0)} 項服務，請在${isMobile ? '下方' : '右側'}購物車確認並完成結帳`
-              : '選擇您需要的服務項目'
-            }
-          </p>
-        </div>
+        {services.length > 0 ? (
+          <div className="mt-12 md:mt-16 p-6 md:p-8 bg-secondary rounded-lg text-center">
+            <p className="text-muted-foreground text-sm md:text-base">
+              {items.length > 0 
+                ? `已選擇 ${items.reduce((sum, item) => sum + item.quantity, 0)} 項服務，請在${isMobile ? '下方' : '右側'}購物車確認並完成結帳`
+                : '選擇您需要的服務項目'
+              }
+            </p>
+          </div>
+        ) : (
+          <div className="mt-12 md:mt-16 p-6 md:p-8 bg-secondary rounded-lg text-center">
+            <p className="text-muted-foreground text-sm md:text-base">
+              暫無服務項目，請進入 <button onClick={() => navigate('/admin')} className="text-accent font-semibold hover:underline">管理模式</button> 添加服務
+            </p>
+          </div>
+        )}
       </main>
 
       {/* 購物車面板 - 行動裝置抽屜 */}
