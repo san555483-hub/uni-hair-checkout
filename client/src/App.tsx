@@ -6,6 +6,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { CartProvider } from "./contexts/CartContext";
 import { FieldsProvider } from "./contexts/FieldsContext";
+import { OrderProvider } from "./contexts/OrderContext";
 import Home from "./pages/Home";
 import AdminMode from "./pages/AdminMode";
 
@@ -35,12 +36,14 @@ function App() {
         // switchable
       >
         <FieldsProvider>
-          <CartProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Router />
-            </TooltipProvider>
-          </CartProvider>
+          <OrderProvider>
+            <CartProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Router />
+              </TooltipProvider>
+            </CartProvider>
+          </OrderProvider>
         </FieldsProvider>
       </ThemeProvider>
     </ErrorBoundary>

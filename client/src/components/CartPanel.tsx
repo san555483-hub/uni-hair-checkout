@@ -1,5 +1,6 @@
 import { useCart } from '@/contexts/CartContext';
-
+import { useOrder } from '@/contexts/OrderContext';
+import ReceiptDialog from './ReceiptDialog';
 import { Trash2, Minus, Plus } from 'lucide-react';
 import { useState } from 'react';
 
@@ -16,8 +17,10 @@ const PAYMENT_METHODS: PaymentMethod[] = [
 
 export default function CartPanel() {
   const { items, removeItem, updateQuantity, clearCart, total } = useCart();
+  const { createOrder } = useOrder();
   const [selectedPayment, setSelectedPayment] = useState<string>('cash');
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [showReceipt, setShowReceipt] = useState(false);
 
   const handleCheckout = () => {
     if (items.length === 0) return;
@@ -25,14 +28,33 @@ export default function CartPanel() {
     setIsCheckingOut(true);
     // 模擬結帳流程
     setTimeout(() => {
-      alert(`結帳成功！\n總金額：NT$${total}\n支付方式：${PAYMENT_METHODS.find(m => m.id === selectedPayment)?.name}`);
+      // 創建訂單
+      const paymentMethodName = PAYMENT_METHODS.find(m => m.id === selectedPayment)?.name || '現金';
+      createOrder(
+        items.map(item => ({
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+        })),
+        paymentMethodName
+      );
+      
+      // 顯示收據對話框
+      setShowReceipt(true);
       clearCart();
       setIsCheckingOut(false);
     }, 500);
   };
 
+  const handleCloseReceipt = () => {
+    setShowReceipt(false);
+  };
+
   return (
-    <div className="w-full h-full bg-card text-card-foreground flex flex-col border-l border-border">
+    <>
+      <ReceiptDialog isOpen={showReceipt} onClose={handleCloseReceipt} />
+      <div className="w-full h-full bg-card text-card-foreground flex flex-col border-l border-border">
       {/* 標題 */}
       <div className="border-b border-border p-6">
         <h2 className="text-2xl font-bold" style={{ fontFamily: 'Playfair Display, serif' }}>購物車</h2>
@@ -129,5 +151,6 @@ export default function CartPanel() {
         )}
       </div>
     </div>
+    </>
   );
 }
