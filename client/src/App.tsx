@@ -1,7 +1,8 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { Route, Switch } from "wouter";
+import { Route, Switch, Router } from "wouter";
+import { useHashLocation } from "wouter/use-hash-location";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { CartProvider } from "./contexts/CartContext";
@@ -11,14 +12,14 @@ import Home from "./pages/Home";
 import AdminMode from "./pages/AdminMode";
 
 
-function Router() {
+function AppRouter() {
   return (
     <Switch>
-      <Route path={"\\"} component={Home} />
-      <Route path={"/admin"} component={AdminMode} />
-      <Route path={"/404"} component={NotFound} />
+      <Route path="/" component={Home} />
+      <Route path="/admin" component={AdminMode} />
+      <Route path="/404" component={NotFound} />
       {/* Final fallback route */}
-      <Route component={NotFound} />
+      <Route component={Home} />
     </Switch>
   );
 }
@@ -40,7 +41,9 @@ function App() {
             <CartProvider>
               <TooltipProvider>
                 <Toaster />
-                <Router />
+                <Router hook={useHashLocation}>
+                  <AppRouter />
+                </Router>
               </TooltipProvider>
             </CartProvider>
           </OrderProvider>
